@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Aplicación OpenCV</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <h2>Aplicación OpenCV</h2>
+    <p id="status">OpenCV.js is loading...</p>
+
+    <div>
+        <div class="inputoutput">
+            <img id="imageSrc" alt="No Image" />
+            <div class="caption">
+                Select Image: <input type="file" id="fileInput" name="file" />
+            </div>
+        </div>
+
+        <div class="inputoutput">
+            <canvas id="canvasInput"></canvas>
+            <div class="caption">canvasInput</div>
+        </div>
+
+        <div class="inputoutput">
+            <canvas id="canvasOutput"></canvas>
+            <div class="caption">canvasOutput</div>
+        </div>
+    </div>
+
+    <button id="btnGray">Convertir a gris</button>
+    <button id="btnInRange">Aplicar inRange</button>
+    <button id="btnResize">Redimensionar</button>
+    <button id="btnTransform">Transformar</button>
+    <button id="btnRotate">Rotar</button>
+    <button id="btnGetAffine">Get Affine Transform</button>
+    <button id="btnPerspective">Perspective Transform</button>
+    <button id="btnSimpleThreshold">Simple Threshold</button>
+    <button id="btnAdaptiveThreshold">Adaptive Threshold</button>
+    <button id="btnFilter1">Filter1</button>
+    <button id="btnGaussianBlur">Gaussian Blur</button>
+    <button id="btnImageErode">Image Erode</button>
+    <button id="btnImageDilate">Image Dilate</button>
+    <button id="btnImageOpening">Image Opening</button>
+    <button id="btnImageGradient">Image Gradient</button>
+    <button onclick= "window.location.href='x.html'">Face Detection</button> 
+
+
+    <script type="text/javascript">
+        let imgElement = document.getElementById('imageSrc');
+        let inputElement = document.getElementById('fileInput');
+        let canvasInput = document.getElementById('canvasInput');
+        let canvasOutput = document.getElementById('canvasOutput');
+        let ctx = canvasInput.getContext("2d");
+
+        inputElement.addEventListener('change', (e) => {
+            imgElement.src = URL.createObjectURL(e.target.files[0]);
+        }, false);
+
+        imgElement.onload = function () {
+            canvasInput.width = imgElement.width;
+            canvasInput.height = imgElement.height;
+            ctx.drawImage(imgElement, 0, 0);
+        };
+
+        // Procesamiento 1: Gris
+        function processGray() {
+            let src = cv.imread('canvasInput');
+            let dst = new cv.Mat();
+
+            cv.cvtColor(src, dst, cv.COLOR_RGBA2GRAY);
+            cv.imshow('canvasOutput', dst);
+
+            src.delete(); dst.delete();
+        }
+
+        // Procesamiento 2: inRange
+        function processInRange() {
+            let src = cv.imread('canvasInput');
+            let dst = new cv.Mat();
+
+            let low = new cv.Mat(src.rows, src.cols, src.type(), [0, 0, 0, 0]);
+            let high = new cv.Mat(src.rows, src.cols, src.type(), [150, 150, 150, 255]);
+
+            cv.inRange(src, low, high, dst);
+            cv.imshow('canvasOutput', dst);
+
+            src.delete(); dst.delete(); low.delete(); high.delete();
+        }
+
+        // Procesamiento 3: Resize
+        function processResize() {
+            let src = cv.imread('canvasInput');
+            let dst = new cv.Mat();
+            let dsize = new cv.Size(300, 300);
+            cv.resize(src, dst, dsize, 0, 0, cv.INTER_AREA);
+            cv.imshow('canvasOutput', dst);
+            src.delete(); dst.delete();
+
+        }
+
+        // Procesamiento 4: Transform
+        function processTransform() {
+            let src = cv.imread('canvasInput');
+            let dst = new cv.Mat();
+            let M = cv.matFromArray(2, 3, cv.CV_64FC1, [1, 0, 50, 0, 1, 100]);
+            let dsize = new cv.Size(src.rows, src.cols);
+            cv.warpAffine(src, dst, M, dsize, cv.INTER_LINEAR, cv.BORDER_CONSTANT, new cv.Scalar());
+            cv.imshow('canvasOutput', dst);
+            src.delete(); dst.delete(); M.delete();
+        }
+
+        //Procesamiento 5: Rotate Transform
+        function processRotate() {
+            let src = cv.imread('canvasInput');
+            let dst = new cv.Mat();
+            let dsize = new cv.Size(src.rows, src.cols);
+            let center = new cv.Point(src.cols / 2, src.rows / 2);
+            // You can try more different parameters
+            let M = cv.getRotationMatrix2D(center, 45, 1);
+            cv.warpAffine(src, dst, M, dsize, cv.INTER_LINEAR, cv.BORDER_CONSTANT, new cv.Scalar());
+            cv.imshow('canvasOutput', dst);
+            src.delete(); dst.delete(); M.delete();
+        }
+
+        //Procesamiento 6: Get Affine Transform
+        function processGetAffine() {
+            let src = cv.imread('canvasInput');
+            let dst = new cv.Mat();
+            // (data32F[0], data32F[1]) is the first point
+            // (data32F[2], data32F[3]) is the sescond point
+            // (data32F[4], data32F[5]) is the third point
+            let srcTri = cv.matFromArray(3, 1, cv.CV_32FC2, [0, 0, 0, 1, 1, 0]);
+            let dstTri = cv.matFromArray(3, 1, cv.CV_32FC2, [0.6, 0.2, 0.1, 1.3, 1.5, 0.3]);
+            let dsize = new cv.Size(src.rows, src.cols);
+            let M = cv.getAffineTransform(srcTri, dstTri);
+            // You can try more different parameters
+            cv.warpAffine(src, dst, M, dsize, cv.INTER_LINEAR, cv.BORDER_CONSTANT, new cv.Scalar());
+            cv.imshow('canvasOutput', dst);
+            src.delete(); dst.delete(); M.delete(); srcTri.delete(); dstTri.delete();
+
+        }
+
+        //Procesamiento 7: Perspective Transform
+        function processPerspective() {
+            let src = cv.imread('canvasInput');
+            let dst = new cv.Mat();
+            let dsize = new cv.Size(src.rows, src.cols);
+            // (data32F[0], data32F[1]) is the first point
+            // (data32F[2], data32F[3]) is the sescond point
+            // (data32F[4], data32F[5]) is the third point
+            // (data32F[6], data32F[7]) is the fourth point
+            let srcTri = cv.matFromArray(4, 1, cv.CV_32FC2, [56, 65, 368, 52, 28, 387, 389, 390]);
+            let dstTri = cv.matFromArray(4, 1, cv.CV_32FC2, [0, 0, 300, 0, 0, 300, 300, 300]);
+            let M = cv.getPerspectiveTransform(srcTri, dstTri);
+            // You can try more different parameters
+            cv.warpPerspective(src, dst, M, dsize, cv.INTER_LINEAR, cv.BORDER_CONSTANT, new cv.Scalar());
+            cv.imshow('canvasOutput', dst);
+            src.delete(); dst.delete(); M.delete(); srcTri.delete(); dstTri.delete();
+
+        }
+
+        //Procesamiento 8: Simple Threshold
+        function processSimpleThreshold() {
+            let src = cv.imread('canvasInput');
+            let dst = new cv.Mat();
+            // You can try more different parameters
+            cv.threshold(src, dst, 177, 200, cv.THRESH_BINARY);
+            cv.imshow('canvasOutput', dst);
+            src.delete();
+            dst.delete();
+
+        }
+
+        //Procesamiento 9: Adaptive Threshold
+        function processAdaptiveThreshold() {
+            let src = cv.imread('canvasInput');
+            let dst = new cv.Mat();
+            cv.cvtColor(src, src, cv.COLOR_RGBA2GRAY, 0);
+            // You can try more different parameters
+            cv.adaptiveThreshold(src, dst, 200, cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY, 3, 2);
+            cv.imshow('canvasOutput', dst);
+            src.delete();
+            dst.delete();
+
+        }
+
+        //Procesamiento 10: Filter1
+        function processFilter1() {
+            let src = cv.imread('canvasInput');
+            let dst = new cv.Mat();
+            let M = cv.Mat.eye(3, 3, cv.CV_32FC1);
+            let anchor = new cv.Point(-1, -1);
+            // You can try more different parameters
+            cv.filter2D(src, dst, cv.CV_8U, M, anchor, 0, cv.BORDER_DEFAULT);
+            cv.imshow('canvasOutput', dst);
+            src.delete(); dst.delete(); M.delete();
+
+        }
+
+        //Procesamiento 11: Gaussian Blur
+        function processGaussianBlur() {
+            let src = cv.imread('canvasInput');
+            let dst = new cv.Mat();
+            let ksize = new cv.Size(3, 3);
+            // You can try more different parameters
+            cv.GaussianBlur(src, dst, ksize, 0, 0, cv.BORDER_DEFAULT);
+            cv.imshow('canvasOutput', dst);
+            src.delete(); dst.delete();
+        }
+
+        //Procesamiento 12: Image Erode
+        function processImageErode() {
+            let src = cv.imread('canvasInput');
+            let dst = new cv.Mat();
+            let M = cv.Mat.ones(5, 5, cv.CV_8U);
+            let anchor = new cv.Point(-1, -1);
+            // You can try more different parameters
+            cv.erode(src, dst, M, anchor, 1, cv.BORDER_CONSTANT, cv.morphologyDefaultBorderValue());
+            cv.imshow('canvasOutput', dst);
+            src.delete(); dst.delete(); M.delete();
+
+        }
+
+        //Procesamiento 13: Image Dilate
+        function processDilate() {
+            let src = cv.imread('canvasInput');
+            let dst = new cv.Mat();
+            let M = cv.Mat.ones(5, 5, cv.CV_8U);
+            let anchor = new cv.Point(-1, -1);
+            // You can try more different parameters
+            cv.dilate(src, dst, M, anchor, 1, cv.BORDER_CONSTANT, cv.morphologyDefaultBorderValue());
+            cv.imshow('canvasOutput', dst);
+            src.delete(); dst.delete(); M.delete();
+
+        }
+
+        //Procesamiento 14: Image Opening
+        function processOpening() {
+            let src = cv.imread('canvasInput');
+            let dst = new cv.Mat();
+            let M = cv.Mat.ones(5, 5, cv.CV_8U);
+            let anchor = new cv.Point(-1, -1);
+            // You can try more different parameters
+            cv.morphologyEx(src, dst, cv.MORPH_OPEN, M, anchor, 1,
+                cv.BORDER_CONSTANT, cv.morphologyDefaultBorderValue());
+            cv.imshow('canvasOutput', dst);
+            src.delete(); dst.delete(); M.delete();
+
+        }
+
+        //Procesamiento 15: Image Gradient
+        function processGradient() {
+            let src = cv.imread('canvasInput');
+            cv.cvtColor(src, src, cv.COLOR_RGBA2RGB);
+            let dst = new cv.Mat();
+            let M = cv.Mat.ones(5, 5, cv.CV_8U);
+            // You can try more different parameters
+            cv.morphologyEx(src, dst, cv.MORPH_GRADIENT, M);
+            cv.imshow('canvasOutput', dst);
+            src.delete(); dst.delete(); M.delete();
+
+        }
+
+        document.getElementById("btnGray").onclick = processGray;
+        document.getElementById("btnInRange").onclick = processInRange;
+        document.getElementById("btnResize").onclick = processResize;
+        document.getElementById("btnTransform").onclick = processTransform;
+        document.getElementById("btnRotate").onclick = processRotate;
+        document.getElementById("btnGetAffine").onclick = processGetAffine;
+        document.getElementById("btnPerspective").onclick = processPerspective;
+        document.getElementById("btnSimpleThreshold").onclick = processSimpleThreshold;;
+        document.getElementById("btnAdaptiveThreshold").onclick = processAdaptiveThreshold;
+        document.getElementById("btnFilter1").onclick = processFilter1;
+        document.getElementById("btnGaussianBlur").onclick = processGaussianBlur;
+        document.getElementById("btnImageErode").onclick = processImageErode;
+        document.getElementById("btnImageDilate").onclick = processDilate;
+        document.getElementById("btnImageOpening").onclick = processOpening;
+        document.getElementById("btnImageGradient").onclick = processGradient;
+
+    </script>
+
+    <script async src="opencv.js" type="text/javascript"></script>
+</body>
+
+</html>

@@ -1,0 +1,113 @@
+/* ------------------------------
+   Estilo general minimalista
+------------------------------ */
+body {
+    margin: 0;
+    padding: 20px;
+    font-family: "Inter", Arial, sans-serif;
+    background: #acacac;
+    color: #2c3e50;
+}
+
+/* Títulos */
+h2 {
+    text-align: center;
+    font-weight: 600;
+    margin-bottom: 10px;
+    letter-spacing: 0.5px;
+    background-color: rgba(250, 235, 215, 0.548);
+}
+
+/* Estado de carga */
+#status {
+    text-align: center;
+    font-size: 14px;
+    color: #798586;
+    margin-bottom: 20px;
+}
+
+/* ------------------------------
+   Contenedores de IO (imagen/canvas)
+------------------------------ */
+.inputoutput {
+    background: #ffffff;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.07);
+    margin-bottom: 20px;
+    display: inline-block;
+    vertical-align: top;
+}
+
+.inputoutput img,
+.inputoutput canvas {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    display: block;
+}
+
+
+.caption {
+    margin-top: 10px;
+    text-align: center;
+    font-size: 13px;
+    color: #7f8c8d;
+}
+
+/* ------------------------------
+   Sección de botones
+------------------------------ */
+button {
+    background: #7463379e;
+    border: none;
+    color: white;
+    padding: 10px 16px;
+    border-radius: 8px;
+    margin: 6px 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: 0.25s ease;
+}
+
+button:hover {
+    background: #1c6cd4;
+    transform: translateY(-2px);
+}
+
+button:active {
+    transform: scale(0.97);
+}
+
+/* Botón especial para Face Detection */
+button.special {
+    background: #e74c3c !important;
+}
+
+button.special:hover {
+    background: #c0392b !important;
+}
+
+/* ------------------------------
+   Video
+------------------------------ */
+video {
+    display: block;
+    margin: 20px auto;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+/* ------------------------------
+   Distribución responsive
+------------------------------ */
+@media (max-width: 900px) {
+    .inputoutput img,
+    .inputoutput canvas {
+        max-width: 90%;
+    }
+
+    button {
+        width: 100%;
+    }
+}
